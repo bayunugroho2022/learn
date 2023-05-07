@@ -27,6 +27,10 @@ jobs:
         with:
           name: gitversion
           path: version.txt
+      - name: Change working directory to upload_store
+        run: cd upload_store
+      - name: Verify working directory
+        run: pwd
   build:
     name: Build APK and Create release
     needs: [version]

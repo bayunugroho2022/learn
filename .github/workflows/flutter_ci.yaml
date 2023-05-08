@@ -66,7 +66,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: "upload_store/build/app/outputs/bundle/release/app-release.aab"
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.G_TOKEN }}
           tag: ${{ steps.version.outputs.content }}
           commit: ${{ github.sha }}
       - name: Upload app bundle

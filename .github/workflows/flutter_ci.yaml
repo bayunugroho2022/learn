@@ -33,44 +33,58 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Get version.txt
-        uses: actions/download-artifact@v2
-        with:
-          name: gitversion
-      - name: Create new file without newline char from version.txt
-        run: tr -d '\n' < version.txt > version1.txt
-      - name: Read version
-        id: version
-        uses: juliangruber/read-file-action@v1
-        with:
-          path: version1.txt
-      - name: Update version in YAML
-        run: sed -i 's/99.99.99+99/${{ steps.version.outputs.content }}+${{ github.run_number }}/g' upload_store/pubspec.yaml
-      - name: Update KeyStore password in gradle properties
-        run: sed -i 's/#{KEYSTORE_PASS}#/${{ secrets.KEYSTORE_PASS }}/g' upload_store/android/key.properties
-      - name: Update KeyStore key password in gradle properties
-        run: sed -i 's/#{KEYSTORE_KEY_PASS}#/${{ secrets.KEYSTORE_KEY_PASS }}/g' upload_store/android/key.properties
-      - uses: actions/setup-java@v1
-        with:
-          java-version: "12.x"
-      - uses: subosito/flutter-action@v1
-        with:
-          channel: "beta"
-      - run: cd upload_store && flutter clean
-      - run: cd upload_store && flutter pub get
-      - run: cd upload_store && flutter build appbundle --release
-      - name: Create a Release in GitHub
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "upload_store/build/app/outputs/apk/release/*.apk,build/app/outputs/bundle/release/app-release.aab"
-          token: ${{ secrets.GH_TOKEN }}
-          tag: ${{ steps.version.outputs.content }}
-          commit: ${{ github.sha }}
-      - name: Upload app bundle
-        uses: actions/upload-artifact@v2
-        with:
-          name: appbundle
-          path: upload_store/build/app/outputs/bundle/release/app-release.aab
+      - name: Creating the key.properties file
+        run: |
+          echo keyPassword=\${{ secrets.KEYSTORE_PASS }} > upload_store/android/apps/bumblebee/android/key.properties
+          echo storePassword=\${{ secrets.KEYSTORE_KEY_PASS }} >> upload_store/android/apps/bumblebee/android/key.properties
+          echo keyAlias=\${{ secrets.KEY_ALIAS }} >> upload_store/android/apps/bumblebee/android/key.properties
+      - name: Decode base64 key into a file
+        run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > upload_store/android/apps/bumblebee/android/app/key.jks
+
+      - name: Build AAB
+        run: cd upload_store && flutter build appbundle --release
+      
+      - name: Get latest commit
+        id: vars
+        run: echo "LATEST_COMMIT_MESSAGE=$(echo $(git log -1 --pretty=format:"%s"))" >> $GITHUB_OUTPUT
+      # - name: Get version.txt
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: gitversion
+      # - name: Create new file without newline char from version.txt
+      #   run: tr -d '\n' < version.txt > version1.txt
+      # - name: Read version
+      #   id: version
+      #   uses: juliangruber/read-file-action@v1
+      #   with:
+      #     path: version1.txt
+      # - name: Update version in YAML
+      #   run: sed -i 's/99.99.99+99/${{ steps.version.outputs.content }}+${{ github.run_number }}/g' upload_store/pubspec.yaml
+      # - name: Update KeyStore password in gradle properties
+      #   run: sed -i 's/#{KEYSTORE_PASS}#/${{ secrets.KEYSTORE_PASS }}/g' upload_store/android/key.properties
+      # - name: Update KeyStore key password in gradle properties
+      #   run: sed -i 's/#{KEYSTORE_KEY_PASS}#/${{ secrets.KEYSTORE_KEY_PASS }}/g' upload_store/android/key.properties
+      # - uses: actions/setup-java@v1
+      #   with:
+      #     java-version: "12.x"
+      # - uses: subosito/flutter-action@v1
+      #   with:
+      #     channel: "beta"
+      # - run: cd upload_store && flutter clean
+      # - run: cd upload_store && flutter pub get
+      # - run: cd upload_store && flutter build appbundle --release
+      # - name: Create a Release in GitHub
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     artifacts: "upload_store/build/app/outputs/apk/release/*.apk,build/app/outputs/bundle/release/app-release.aab"
+      #     token: ${{ secrets.GH_TOKEN }}
+      #     tag: ${{ steps.version.outputs.content }}
+      #     commit: ${{ github.sha }}
+      # - name: Upload app bundle
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: appbundle
+      #     path: upload_store/build/app/outputs/bundle/release/app-release.aab
   release:
     name: Release app to internal track
     needs: [build]
@@ -85,7 +99,7 @@ jobs:
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAYSTORE_ACCOUNT_KEY }}
-          packageName: com.app.package_name
+          packageName: com.bayunugroho404.example.upload_store
           releaseFiles: app-release.aab
           track: alpha
           status: completed

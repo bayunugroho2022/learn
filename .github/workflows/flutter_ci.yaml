@@ -41,12 +41,6 @@ jobs:
       - name: Decode base64 key into a file
         run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > upload_store/android/app/key.jks
 
-      - name: Build AAB
-        run: cd upload_store && flutter build appbundle --release
-      
-      - name: Get latest commit
-        id: vars
-        run: echo "LATEST_COMMIT_MESSAGE=$(echo $(git log -1 --pretty=format:"%s"))" >> $GITHUB_OUTPUT
       # - name: Get version.txt
       #   uses: actions/download-artifact@v2
       #   with:
@@ -67,24 +61,29 @@ jobs:
       # - uses: actions/setup-java@v1
       #   with:
       #     java-version: "12.x"
-      # - uses: subosito/flutter-action@v1
-      #   with:
-      #     channel: "beta"
-      # - run: cd upload_store && flutter clean
-      # - run: cd upload_store && flutter pub get
-      # - run: cd upload_store && flutter build appbundle --release
-      # - name: Create a Release in GitHub
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     artifacts: "upload_store/build/app/outputs/apk/release/*.apk,build/app/outputs/bundle/release/app-release.aab"
-      #     token: ${{ secrets.GH_TOKEN }}
-      #     tag: ${{ steps.version.outputs.content }}
-      #     commit: ${{ github.sha }}
-      # - name: Upload app bundle
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: appbundle
-      #     path: upload_store/build/app/outputs/bundle/release/app-release.aab
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: "beta"
+      - run: cd upload_store && flutter clean
+      - run: cd upload_store && flutter pub get
+      - run: cd upload_store && flutter build appbundle --release
+      - name: Create a Release in GitHub
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "upload_store/build/app/outputs/apk/release/*.apk,build/app/outputs/bundle/release/app-release.aab"
+          token: ${{ secrets.GH_TOKEN }}
+          tag: ${{ steps.version.outputs.content }}
+          commit: ${{ github.sha }}
+      - name: Upload app bundle
+        uses: actions/upload-artifact@v2
+        with:
+          name: appbundle
+          path: upload_store/build/app/outputs/bundle/release/app-release.aab
+
+      - name: Get latest commit
+        id: vars
+        run: echo "LATEST_COMMIT_MESSAGE=$(echo $(git log -1 --pretty=format:"%s"))" >> $GITHUB_OUTPUT
+
   release:
     name: Release app to internal track
     needs: [build]

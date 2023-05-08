@@ -35,11 +35,11 @@ jobs:
       - uses: actions/checkout@v1
       - name: Creating the key.properties file
         run: |
-          echo keyPassword=\${{ secrets.KEYSTORE_PASS }} > upload_store/android/apps/bumblebee/android/key.properties
-          echo storePassword=\${{ secrets.KEYSTORE_KEY_PASS }} >> upload_store/android/apps/bumblebee/android/key.properties
-          echo keyAlias=\${{ secrets.KEY_ALIAS }} >> upload_store/android/apps/bumblebee/android/key.properties
+          echo keyPassword=\${{ secrets.KEYSTORE_PASS }} > upload_store/android/key.properties
+          echo storePassword=\${{ secrets.KEYSTORE_KEY_PASS }} >> upload_store/android/key.properties
+          echo keyAlias=\${{ secrets.KEY_ALIAS }} >> upload_store/android/key.properties
       - name: Decode base64 key into a file
-        run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > upload_store/android/apps/bumblebee/android/app/key.jks
+        run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > upload_store/android/app/key.jks
 
       - name: Build AAB
         run: cd upload_store && flutter build appbundle --release

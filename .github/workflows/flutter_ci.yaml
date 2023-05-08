@@ -58,7 +58,6 @@ jobs:
           channel: "beta"
       - run: cd upload_store && flutter clean
       - run: cd upload_store && flutter pub get
-      - run: cd upload_store && flutter build apk --release --split-per-abi
       - run: cd upload_store && flutter build appbundle --release
       - name: Create a Release in GitHub
         uses: ncipollo/release-action@v1

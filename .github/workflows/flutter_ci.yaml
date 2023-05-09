@@ -44,6 +44,8 @@ jobs:
         uses: juliangruber/read-file-action@v1
         with:
           path: version1.txt
+      - name: Decode base64 key into a file
+        run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > upload_store/android/app/upload-keystore.jks
       - name: Update version in YAML
         run: sed -i 's/99.99.99+99/${{ steps.version.outputs.content }}+${{ github.run_number }}/g' upload_store/pubspec.yaml
       - name: Update KeyStore password in gradle properties
@@ -63,7 +65,7 @@ jobs:
       - name: Create a Release in GitHub
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "upload_store/build/app/outputs/apk/release/*.apk,upload_store/build/app/outputs/bundle/release/app-release.aab"
+          artifacts: "upload_store/build/app/outputs/bundle/release/app-release.aab"
           token: ${{ secrets.G_TOKEN }}
           tag: ${{ steps.version.outputs.content }}
           commit: ${{ github.sha }}

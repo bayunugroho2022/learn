@@ -90,5 +90,5 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAYSTORE_ACCOUNT_KEY }}
           packageName: com.bayunugroho404.example.upload_store
           releaseFiles: app-release.aab
-          track: alpha
+          track: internal
           status: completed
